@@ -21,7 +21,7 @@ test.describe('SauceDemo', () => {
     await page.locator('[data-test="password"]').fill(VALID_PASSWORD);
     await page.locator('[data-test="login-button"]').click();
 
-    await expect(page).toHaveURL(/inventory/);
+    await expect(page, 'Valid credentials should redirect to /inventory').toHaveURL(/inventory/);
   });
 
   test('shows an error when the password is wrong', async ({ page }) => {
@@ -113,6 +113,63 @@ test.describe('SauceDemo', () => {
         page.locator(CART_BADGE),
         'After equal numbers of add and remove the cart badge should not be visible'
       ).not.toBeVisible();
+    });
+
+    test('double-click on Add to cart accidentally removes the item', async ({ page }) => {
+      // After the first click the Add-to-cart button is replaced in place by a
+      // Remove button. A fast double-click therefore registers as add + remove,
+      // and the cart ends up empty with no feedback to the user.
+      await page.locator(BACKPACK_ADD_BTN).dblclick();
+
+      await expect(
+        page.locator(CART_BADGE),
+        'Bug: double-clicking Add to cart leaves the cart empty instead of adding the item'
+      ).not.toBeVisible();
+    });
+
+    test('cart badge reflects multiple add and remove operations', async ({ page }) => {
+      await page.locator(BACKPACK_ADD_BTN).click();
+      await page.locator('[data-test="add-to-cart-sauce-labs-bike-light"]').click();
+      await page.locator('[data-test="add-to-cart-sauce-labs-bolt-t-shirt"]').click();
+
+      await expect(
+        page.locator(CART_BADGE),
+        'Cart badge should show 3 after adding three distinct products'
+      ).toHaveText('3');
+
+      await page.locator(BACKPACK_REMOVE_BTN).click();
+
+      await expect(
+        page.locator(CART_BADGE),
+        'Cart badge should show 2 after removing one of three products'
+      ).toHaveText('2');
+    });
+
+    test('changing the sort order updates the first product shown', async ({ page }) => {
+      const firstProductName = page.locator('[data-test="inventory-item-name"]').first();
+      const defaultFirst = await firstProductName.textContent();
+
+      await page.locator('[data-test="product-sort-container"]').selectOption('lohi');
+
+      await expect(
+        firstProductName,
+        `Switching to "Price (low to high)" should change the first product (was "${defaultFirst}")`
+      ).not.toHaveText(defaultFirst ?? '');
+    });
+
+    test('cart persists across page refresh', async ({ page }) => {
+      await page.locator(BACKPACK_ADD_BTN).click();
+      await expect(
+        page.locator(CART_BADGE),
+        'Precondition: badge should show 1 after add'
+      ).toHaveText('1');
+
+      await page.reload();
+
+      await expect(
+        page.locator(CART_BADGE),
+        'Cart badge should still show 1 after page reload (cart persistence)'
+      ).toHaveText('1');
     });
   });
 });

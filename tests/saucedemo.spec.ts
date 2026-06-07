@@ -9,11 +9,14 @@ test.describe('SauceDemo', () => {
   });
 
   test('has browser tab title', async ({ page }) => {
-    await expect(page).toHaveTitle(/Swag Labs/);
+    await expect(page, 'Tab title should contain "Swag Labs"').toHaveTitle(/Swag Labs/);
   });
 
   test('has Swag Labs title', async ({ page }) => {
-    await expect(page.getByText('Swag Labs')).toBeVisible();
+    await expect(
+      page.getByText('Swag Labs'),
+      'Swag Labs branding should be visible on the login page'
+    ).toBeVisible();
   });
 
   test('logs in with valid credentials and lands on inventory', async ({ page }) => {

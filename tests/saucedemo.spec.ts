@@ -185,5 +185,45 @@ test.describe('SauceDemo', () => {
         'Cart badge should still show 1 after page reload (cart persistence)'
       ).toHaveText('1');
     });
+
+    test('user can complete checkout and see success message', async ({ page }) => {
+      await page.locator(BACKPACK_ADD_BTN).click();
+      await expect(
+        page.locator(CART_BADGE),
+        'Precondition: badge should show 1 after add'
+      ).toHaveText('1');
+
+      await page.locator('[data-test="shopping-cart-link"]').click();
+
+      await expect(
+        page,
+        'Should navigate to cart page'
+      ).toHaveURL(/cart/);
+
+      await page.locator('[data-test="checkout"]').click();
+
+      await expect(
+        page,
+        'Should navigate to checkout page'
+      ).toHaveURL(/checkout-step-one/);
+
+      await page.locator('[data-test="firstName"]').fill('John');
+      await page.locator('[data-test="lastName"]').fill('Doe');
+      await page.locator('[data-test="postalCode"]').fill('12345');
+
+      await page.locator('[data-test="continue"]').click();
+
+      await expect(
+        page,
+        'Should navigate to checkout step two'
+      ).toHaveURL(/checkout-step-two/);
+
+      await page.locator('[data-test="finish"]').click();
+
+      await expect(
+        page.locator('[data-test="complete-header"]'),
+        'Should display success message'
+      ).toHaveText('Thank you for your order!');
+    });
   });
 });

@@ -67,6 +67,17 @@ test.describe('SauceDemo', () => {
     ).toHaveText(/Username is required/);
   });
 
+  test('shows locked out user error', async ({ page }) => {
+    await page.locator('[data-test="username"]').fill('locked_out_user');
+    await page.locator('[data-test="password"]').fill('secret_sauce');
+    await page.locator('[data-test="login-button"]').click();
+
+    await expect(
+      page.locator('[data-test="error"]'),
+      'Locked out user should see the locked-out error message'
+    ).toHaveText('Epic sadface: Sorry, this user has been locked out.');
+  });
+
   test.describe('after successful login', () => {
     const BACKPACK_ADD_BTN = '[data-test="add-to-cart-sauce-labs-backpack"]';
     const BACKPACK_REMOVE_BTN = '[data-test="remove-sauce-labs-backpack"]';

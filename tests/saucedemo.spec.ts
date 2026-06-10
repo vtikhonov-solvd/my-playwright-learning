@@ -46,7 +46,7 @@ test.describe('SauceDemo', () => {
       'Empty form submit should report "Username is required"'
     ).toHaveText(/Username is required/);
   });
-
+//Password validation message test
   test('shows a password-required error when only username is provided', async ({ page }) => {
     await page.locator('[data-test="username"]').fill(VALID_USERNAME);
     await page.locator('[data-test="login-button"]').click();

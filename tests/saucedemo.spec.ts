@@ -8,7 +8,7 @@ test.describe('SauceDemo', () => {
     await page.goto('https://www.saucedemo.com/');
   });
 
-  test('has browser tab title', async ({ page }) => {
+  test.only('has browser tab title', async ({ page }) => {
     await expect(page, 'Tab title should contain "Swag Labs"').toHaveTitle(/Swag Labs/);
   });
 

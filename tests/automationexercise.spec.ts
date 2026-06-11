@@ -1,106 +1,147 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from "@playwright/test";
+import { HomePage } from "../pages/HomePage";
+import { ProductsPage } from "../pages/ProductsPage";
+import { ProductDetailPage } from "../pages/ProductDetailPage";
+import { CartPage } from "../pages/CartPage";
+import { searchTerm, subscriberEmail } from "../test-data/products";
 
-const BASE_URL = 'https://automationexercise.com';
+/**
+ * Track B — Automation Exercise (https://automationexercise.com).
+ *
+ * The suite drives a real e-commerce demo site through the Page Object Model.
+ * Every locator and low-level action lives in pages/; the tests below read as
+ * user behaviour and own all of the assertions. Locators are role/accessibility
+ * based or stable ids, and there are no hard waits — assertions rely on
+ * Playwright's auto-waiting.
+ */
+test.describe("Automation Exercise", () => {
+  let home: HomePage;
+  let products: ProductsPage;
+  let detail: ProductDetailPage;
+  let cart: CartPage;
 
-test.describe('Automation Exercise — Realistic E-Commerce Journey', () => {
-  test('user can navigate to home page and see products', async ({ page }) => {
-    await page.goto(`${BASE_URL}`, { waitUntil: 'domcontentloaded' });
+  test.beforeEach(async ({ page }) => {
+    home = new HomePage(page);
+    products = new ProductsPage(page);
+    detail = new ProductDetailPage(page);
+    cart = new CartPage(page);
+  });
 
-    // Verify page loaded with title
+  test("home page loads and shows featured products", async ({ page }) => {
+    await home.open();
+
+    await expect(page, "Browser tab should show the site title").toHaveTitle(
+      /Automation Exercise/i
+    );
     await expect(
-      page,
-      'Should load Automation Exercise home page'
-    ).toHaveTitle(/Automation/i);
+      home.featuredProducts.first(),
+      "Home page should render the featured-products grid"
+    ).toBeVisible();
+    expect(
+      await home.featuredProducts.count(),
+      "Home page should list multiple featured products"
+    ).toBeGreaterThan(1);
+  });
 
-    // Verify product section exists
-    const productsSection = page.locator('body');
+  test("user can navigate to the products page from the navbar", async ({ page }) => {
+    await home.open();
+    await home.goToProducts();
+
+    await expect(page, "Should be on the products page").toHaveURL(/products/);
     await expect(
-      productsSection,
-      'Should display products on home page'
+      products.heading,
+      'Products page should show the "All Products" heading'
     ).toBeVisible();
   });
 
-  test('user can navigate to products page', async ({ page }) => {
-    await page.goto(`${BASE_URL}`, { waitUntil: 'domcontentloaded' });
+  test("searching for a product returns matching results", async () => {
+    await products.open();
+    await products.search(searchTerm);
 
-    // Navigate to products page
-    const productsLink = page.getByRole('link', { name: /products/i });
-    await productsLink.click();
-
-    // Verify products page loaded
     await expect(
-      page,
-      'Should navigate to products page'
-    ).toHaveURL(/products/);
+      products.searchedProductsHeading,
+      'Search should switch the heading to "Searched Products"'
+    ).toBeVisible();
 
-    // Verify page title indicates products page
-    const pageTitle = page.locator('h1, h2').first();
+    const matches = products.productCards.filter({
+      hasText: new RegExp(searchTerm, "i"),
+    });
     await expect(
-      pageTitle,
-      'Should show products page heading'
+      matches.first(),
+      `Search results should contain at least one "${searchTerm}" product`
     ).toBeVisible();
   });
 
-  test('user can view product details', async ({ page }) => {
-    await page.goto(`${BASE_URL}/products`, { waitUntil: 'domcontentloaded' });
+  test("product detail page shows name, category and availability", async ({ page }) => {
+    await products.open();
+    await products.viewProduct(0);
 
-    // Click on first product view details
-    const viewDetailsButton = page.getByRole('link', { name: /view product/i }).first();
-    await viewDetailsButton.click();
-
-    // Verify product details page loaded
+    await expect(page, "Should be on a product detail page").toHaveURL(
+      /product_details/
+    );
+    await expect(detail.name, "Product name should be shown").toBeVisible();
     await expect(
-      page,
-      'Should navigate to product details page'
-    ).toHaveURL(/product_details/);
-
-    // Verify product information is displayed
-    const productInfo = page.locator('body');
+      detail.category,
+      "Product category should be shown"
+    ).toContainText("Category:");
     await expect(
-      productInfo,
-      'Should display product details'
+      detail.availability,
+      "Availability should report the product is in stock"
+    ).toContainText(/In Stock/i);
+  });
+
+  test("user can add a product to the cart and see it listed", async ({ page }) => {
+    await products.open();
+    await products.viewProduct(0);
+
+    const productName = (await detail.name.textContent())?.trim() ?? "";
+
+    await detail.addToCartAndView();
+
+    await expect(page, "Should land on the cart page").toHaveURL(/view_cart/);
+    await expect(
+      cart.productNames.filter({ hasText: productName }),
+      `Cart should list the product just added ("${productName}")`
     ).toBeVisible();
   });
 
-  test('user can add product to cart', async ({ page }) => {
-    await page.goto(`${BASE_URL}/products`, { waitUntil: 'domcontentloaded' });
+  test("user can add two distinct products to the cart", async ({ page }) => {
+    let firstName = "";
 
-    // Click view details on first product
-    const viewDetailsButton = page.getByRole('link', { name: /view product/i }).first();
-    await viewDetailsButton.click();
+    await test.step("Add the first product", async () => {
+      await products.open();
+      await products.viewProduct(0);
+      firstName = (await detail.name.textContent())?.trim() ?? "";
+      await detail.addToCart();
+    });
 
-    // Add to cart
-    const addToCartButton = page.getByRole('button', { name: /add to cart/i });
-    await addToCartButton.click();
+    await test.step("Add a second, different product", async () => {
+      // Re-opening the products page navigates away and dismisses the modal.
+      await products.open();
+      await products.viewProduct(1);
+      await detail.addToCartAndView();
+    });
 
-    // A confirmation modal appears; follow its "View Cart" link
-    const cartModal = page.locator('#cartModal');
-    await expect(cartModal).toBeVisible();
-    await cartModal.getByRole('link', { name: /view cart/i }).click();
-
-    // Verify cart page loaded
-    await expect(
-      page,
-      'Should navigate to cart page'
-    ).toHaveURL(/cart/);
+    await test.step("Verify both products are in the cart", async () => {
+      await expect(page, "Should land on the cart page").toHaveURL(/view_cart/);
+      await expect(
+        cart.productNames.filter({ hasText: firstName }),
+        "Cart should still list the first product"
+      ).toBeVisible();
+      expect(
+        await cart.itemCount(),
+        "Cart should hold two distinct product lines"
+      ).toBe(2);
+    });
   });
 
-  test('user can navigate between pages', async ({ page }) => {
-    await page.goto(`${BASE_URL}`, { waitUntil: 'domcontentloaded' });
-
-    // Navigate to products
-    const productsLink = page.getByRole('link', { name: /products/i });
-    await productsLink.click();
-
-    await expect(page).toHaveURL(/products/);
-
-    // Navigate to home via the navbar Home link
-    const homeLink = page.locator('.navbar-nav').getByRole('link', { name: /home/i });
-    await homeLink.click();
+  test("visitor can subscribe to the newsletter from the footer", async () => {
+    await home.open();
+    await home.subscribe(subscriberEmail);
 
     await expect(
-      page,
-      'Should navigate back to home page'
-    ).toHaveURL(BASE_URL + '/');
+      home.subscriptionSuccess,
+      "A success message should confirm the subscription"
+    ).toBeVisible();
   });
 });

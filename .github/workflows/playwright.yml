@@ -10,6 +10,10 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: mcr.microsoft.com/playwright:v1.59.1-noble
+    # The runner mounts a HOME the container's root user doesn't own, which
+    # breaks Firefox's sandbox. Point HOME at /root (owned by root).
+    env:
+      HOME: /root
     steps:
     - uses: actions/checkout@v4
     - name: Install dependencies

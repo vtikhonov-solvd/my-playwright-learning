@@ -1,10 +1,10 @@
 import { test, expect } from '@playwright/test';
 
-const BASE_URL = 'https://practice.automationexercise.com';
+const BASE_URL = 'https://automationexercise.com';
 
 test.describe('Automation Exercise — Realistic E-Commerce Journey', () => {
   test('user can navigate to home page and see products', async ({ page }) => {
-    await page.goto(`${BASE_URL}`);
+    await page.goto(`${BASE_URL}`, { waitUntil: 'domcontentloaded' });
 
     // Verify page loaded with title
     await expect(
@@ -21,7 +21,7 @@ test.describe('Automation Exercise — Realistic E-Commerce Journey', () => {
   });
 
   test('user can navigate to products page', async ({ page }) => {
-    await page.goto(`${BASE_URL}`);
+    await page.goto(`${BASE_URL}`, { waitUntil: 'domcontentloaded' });
 
     // Navigate to products page
     const productsLink = page.getByRole('link', { name: /products/i });
@@ -34,7 +34,7 @@ test.describe('Automation Exercise — Realistic E-Commerce Journey', () => {
     ).toHaveURL(/products/);
 
     // Verify page title indicates products page
-    const pageTitle = page.locator('h1, h2');
+    const pageTitle = page.locator('h1, h2').first();
     await expect(
       pageTitle,
       'Should show products page heading'
@@ -42,10 +42,10 @@ test.describe('Automation Exercise — Realistic E-Commerce Journey', () => {
   });
 
   test('user can view product details', async ({ page }) => {
-    await page.goto(`${BASE_URL}/products`);
+    await page.goto(`${BASE_URL}/products`, { waitUntil: 'domcontentloaded' });
 
     // Click on first product view details
-    const viewDetailsButton = page.getByRole('link', { name: /view details|details/i }).first();
+    const viewDetailsButton = page.getByRole('link', { name: /view product/i }).first();
     await viewDetailsButton.click();
 
     // Verify product details page loaded
@@ -63,22 +63,20 @@ test.describe('Automation Exercise — Realistic E-Commerce Journey', () => {
   });
 
   test('user can add product to cart', async ({ page }) => {
-    await page.goto(`${BASE_URL}/products`);
+    await page.goto(`${BASE_URL}/products`, { waitUntil: 'domcontentloaded' });
 
     // Click view details on first product
-    const viewDetailsButton = page.getByRole('link', { name: /view details|details/i }).first();
+    const viewDetailsButton = page.getByRole('link', { name: /view product/i }).first();
     await viewDetailsButton.click();
 
     // Add to cart
     const addToCartButton = page.getByRole('button', { name: /add to cart/i });
     await addToCartButton.click();
 
-    // Handle success message or modal
-    await page.waitForTimeout(1000);
-
-    // Navigate to cart
-    const cartLink = page.getByRole('link', { name: /cart|shopping cart/i }).first();
-    await cartLink.click();
+    // A confirmation modal appears; follow its "View Cart" link
+    const cartModal = page.locator('#cartModal');
+    await expect(cartModal).toBeVisible();
+    await cartModal.getByRole('link', { name: /view cart/i }).click();
 
     // Verify cart page loaded
     await expect(
@@ -88,7 +86,7 @@ test.describe('Automation Exercise — Realistic E-Commerce Journey', () => {
   });
 
   test('user can navigate between pages', async ({ page }) => {
-    await page.goto(`${BASE_URL}`);
+    await page.goto(`${BASE_URL}`, { waitUntil: 'domcontentloaded' });
 
     // Navigate to products
     const productsLink = page.getByRole('link', { name: /products/i });
@@ -96,8 +94,8 @@ test.describe('Automation Exercise — Realistic E-Commerce Journey', () => {
 
     await expect(page).toHaveURL(/products/);
 
-    // Navigate to home
-    const homeLink = page.getByRole('link', { name: /home|automationexercise/i }).first();
+    // Navigate to home via the navbar Home link
+    const homeLink = page.locator('.navbar-nav').getByRole('link', { name: /home/i });
     await homeLink.click();
 
     await expect(

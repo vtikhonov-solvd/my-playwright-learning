@@ -86,6 +86,13 @@ Design rules followed:
 - **No over-engineering.** No `BasePage` or custom wrappers — just small,
   readable classes, one per page.
 
+## Covered user journey
+
+A visitor's product-discovery and cart flow: **home → products → search →
+product details → add to cart (single and multiple items)**, plus newsletter
+signup. This is the browsing-and-cart slice of the site; see *Known limitations*
+below for what is intentionally out of scope.
+
 ## Test suite (Track B)
 
 `tests/automationexercise.spec.ts` — 7 tests:
@@ -106,3 +113,22 @@ Design rules followed:
   runs serially.
 - The HTML reporter is enabled; on CI the `playwright-report/` is uploaded as an
   artifact (see [`.github/workflows/playwright.yml`](.github/workflows/playwright.yml)).
+
+## Known limitations
+
+- **Live third-party site.** Tests run against the public Automation Exercise
+  demo, which shows ads, can change its UI, and is occasionally slow. This makes
+  runs prone to transient flakiness; the single local retry (and 2x on CI)
+  absorbs it. Locators are stable — the flakiness is environmental, not in the
+  tests.
+- **Scope is browsing + cart only.** Account registration, login, full checkout,
+  and payment are intentionally out of scope. The site gates parts of those
+  flows behind email/account steps that are noisy to automate against a shared
+  demo environment, so per the Track B guidance they are excluded rather than
+  fought.
+- **Not exhaustive.** The suite covers the happy path plus a few meaningful
+  variations (search, multi-item cart); it does not attempt every edge case.
+- **Product selection by position.** A couple of tests open "the first / second
+  product" by position. The catalog order on the demo site is stable, so this is
+  reliable today, but a catalog reorder would change *which* product is asserted
+  (not whether the test passes).

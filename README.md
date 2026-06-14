@@ -62,8 +62,8 @@ my-playwright-learning/
 ├── tests/
 │   ├── saucedemo/                  # final-project suite — one spec per feature
 │   │   ├── login.spec.ts  cart.spec.ts  checkout.spec.ts  sorting.spec.ts
-│   └── automation-exercise/        # additional suite
-│       └── automationexercise.spec.ts
+│   └── automation-exercise/        # additional suite — one spec per feature
+│       ├── browse.spec.ts  search.spec.ts  cart.spec.ts  newsletter.spec.ts
 ├── test-data/
 │   ├── users.ts                    # SauceDemo: credentials, product ids, checkout inputs
 │   └── products.ts                 # Automation Exercise: search term, subscriber email

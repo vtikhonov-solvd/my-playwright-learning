@@ -1,7 +1,7 @@
 import { test, expect } from "@playwright/test";
-import { LoginPage } from "../pages/LoginPage";
-import { InventoryPage } from "../pages/InventoryPage";
-import { users } from "../test-data/users";
+import { LoginPage } from "../../pages/saucedemo/LoginPage";
+import { InventoryPage } from "../../pages/saucedemo/InventoryPage";
+import { users } from "../../test-data/users";
 
 /**
  * Ticket 4 (bonus) — Sorting.

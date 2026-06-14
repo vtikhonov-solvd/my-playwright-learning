@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
-import { LoginPage } from "../pages/LoginPage";
-import { users } from "../test-data/users";
+import { LoginPage } from "../../pages/saucedemo/LoginPage";
+import { users } from "../../test-data/users";
 
 /**
  * Ticket 1 — Login regression.

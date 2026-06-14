@@ -1,9 +1,9 @@
 import { test, expect } from "@playwright/test";
-import { LoginPage } from "../pages/LoginPage";
-import { InventoryPage } from "../pages/InventoryPage";
-import { CartPage } from "../pages/CartPage";
-import { CheckoutPage } from "../pages/CheckoutPage";
-import { users, products, checkoutInfo } from "../test-data/users";
+import { LoginPage } from "../../pages/saucedemo/LoginPage";
+import { InventoryPage } from "../../pages/saucedemo/InventoryPage";
+import { CartPage } from "../../pages/saucedemo/CartPage";
+import { CheckoutPage } from "../../pages/saucedemo/CheckoutPage";
+import { users, products, checkoutInfo } from "../../test-data/users";
 
 /**
  * Ticket 3 — Checkout flow.

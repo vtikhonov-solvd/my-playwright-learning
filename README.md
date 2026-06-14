@@ -44,22 +44,30 @@ Login → product inventory → cart → checkout, plus product sorting.
 
 ## Project structure
 
+The repo holds **two test suites**, each in its own folder under `tests/` with a
+matching page-object folder under `pages/`. SauceDemo is the final-project suite;
+Automation Exercise is an additional e-commerce suite. Both run with a plain
+`npx playwright test`.
+
 ```
 my-playwright-learning/
-├── pages/                  # Page Object classes — locators + user actions, one per page
-│   ├── LoginPage.ts        # credential form, error banner
-│   ├── InventoryPage.ts    # add/remove, cart badge, sort dropdown
-│   ├── CartPage.ts         # cart contents, checkout button
-│   └── CheckoutPage.ts     # information form, finish, success message
-├── tests/                  # one spec per feature (the runnable suite)
-│   ├── login.spec.ts
-│   ├── cart.spec.ts
-│   ├── checkout.spec.ts
-│   └── sorting.spec.ts
+├── pages/
+│   ├── saucedemo/                  # SauceDemo Page Objects
+│   │   ├── LoginPage.ts            # credential form, error banner
+│   │   ├── InventoryPage.ts        # add/remove, cart badge, sort dropdown
+│   │   ├── CartPage.ts             # cart contents, checkout button
+│   │   └── CheckoutPage.ts         # information form, finish, success message
+│   └── automation-exercise/        # Automation Exercise Page Objects
+│       ├── HomePage.ts  ProductsPage.ts  ProductDetailPage.ts  CartPage.ts
+├── tests/
+│   ├── saucedemo/                  # final-project suite — one spec per feature
+│   │   ├── login.spec.ts  cart.spec.ts  checkout.spec.ts  sorting.spec.ts
+│   └── automation-exercise/        # additional suite
+│       └── automationexercise.spec.ts
 ├── test-data/
-│   └── users.ts            # credentials, product ids, checkout inputs
-├── track-b/                # additional Automation Exercise POM suite (reference, see below)
-├── learning/               # early tutorial scratch specs (not run)
+│   ├── users.ts                    # SauceDemo: credentials, product ids, checkout inputs
+│   └── products.ts                 # Automation Exercise: search term, subscriber email
+├── learning/                       # early tutorial scratch specs (not run)
 ├── playwright.config.ts
 └── README.md
 ```
@@ -84,7 +92,9 @@ Other useful runs:
 
 ```bash
 npx playwright test --project=chromium          # one browser
-npx playwright test tests/login.spec.ts         # one feature
+npx playwright test tests/saucedemo             # just the SauceDemo suite
+npx playwright test tests/automation-exercise   # just the Automation Exercise suite
+npx playwright test tests/saucedemo/login.spec.ts   # one feature
 npx playwright test --headed                    # watch it run
 npx playwright test --project=chromium --repeat-each=3   # stability check
 ```
@@ -124,10 +134,13 @@ Design rules followed:
   `npx playwright test --project=chromium --repeat-each=3`.
 - Coverage is scoped to the documented user journeys, not every edge case.
 
-## Additional work
+## Additional suite — Automation Exercise
 
-- [`track-b/`](track-b/) — a second POM suite targeting
-  [Automation Exercise](https://automationexercise.com) (an earlier track of this
-  project). It lives outside `tests/`, so it is not part of the default run.
-- [`learning/`](learning/) — early Playwright tutorial scratch specs, kept for
-  reference and excluded from the suite.
+[`tests/automation-exercise/`](tests/automation-exercise/) is a second POM suite
+targeting [Automation Exercise](https://automationexercise.com): browsing,
+search, product details, cart, and newsletter signup. It shares the same browser
+projects and runs as part of `npx playwright test`; run it alone with
+`npx playwright test tests/automation-exercise`.
+
+[`learning/`](learning/) holds early Playwright tutorial scratch specs, kept for
+reference and excluded from the suite.

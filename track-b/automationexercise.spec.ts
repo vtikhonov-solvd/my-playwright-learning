@@ -1,9 +1,9 @@
 import { test, expect } from "@playwright/test";
-import { HomePage } from "../pages/HomePage";
-import { ProductsPage } from "../pages/ProductsPage";
-import { ProductDetailPage } from "../pages/ProductDetailPage";
-import { CartPage } from "../pages/CartPage";
-import { searchTerm, subscriberEmail } from "../test-data/products";
+import { HomePage } from "./pages/HomePage";
+import { ProductsPage } from "./pages/ProductsPage";
+import { ProductDetailPage } from "./pages/ProductDetailPage";
+import { CartPage } from "./pages/CartPage";
+import { searchTerm, subscriberEmail } from "./products";
 
 /**
  * Track B — Automation Exercise (https://automationexercise.com).

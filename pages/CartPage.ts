@@ -1,30 +1,23 @@
 import { type Locator, type Page } from "@playwright/test";
 
 /**
- * Page Object for the shopping cart page
- * (https://automationexercise.com/view_cart).
+ * Page Object for the SauceDemo cart page (/cart.html). Lists the items added
+ * to the cart and starts the checkout flow.
  */
 export class CartPage {
   readonly page: Page;
-  readonly cartTable: Locator;
-  readonly rows: Locator;
-  readonly productNames: Locator;
+  readonly cartItems: Locator;
+  readonly itemNames: Locator;
+  readonly checkoutButton: Locator;
 
   constructor(page: Page) {
     this.page = page;
-    this.cartTable = page.locator("#cart_info_table");
-    this.rows = this.cartTable.locator("tbody tr");
-    this.productNames = this.cartTable.locator(".cart_description h4 a");
+    this.cartItems = page.locator('[data-test="inventory-item"]');
+    this.itemNames = page.locator('[data-test="inventory-item-name"]');
+    this.checkoutButton = page.locator('[data-test="checkout"]');
   }
 
-  async open() {
-    await this.page.goto("https://automationexercise.com/view_cart", {
-      waitUntil: "domcontentloaded",
-    });
-  }
-
-  /** Number of distinct product lines currently in the cart. */
-  async itemCount(): Promise<number> {
-    return this.rows.count();
+  async checkout() {
+    await this.checkoutButton.click();
   }
 }

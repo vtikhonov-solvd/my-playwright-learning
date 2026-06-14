@@ -72,6 +72,20 @@ test.describe("Automation Exercise", () => {
     ).toBeVisible();
   });
 
+  test("searching for a nonsense term returns no products", async () => {
+    await products.open();
+    await products.search("zzqnonexistentproductxyz");
+
+    await expect(
+      products.searchedProductsHeading,
+      'Search should still switch the heading to "Searched Products"'
+    ).toBeVisible();
+    expect(
+      await products.productCards.count(),
+      "A term that matches nothing should return zero products"
+    ).toBe(0);
+  });
+
   test("product detail page shows name, category and availability", async ({ page }) => {
     await products.open();
     await products.viewProduct(0);

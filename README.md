@@ -6,9 +6,16 @@ End-to-end UI tests written with **Playwright + TypeScript**, structured with th
 covers a realistic shopping journey: browsing, search, product details, and the
 cart.
 
-The repository also keeps earlier learning specs (SauceDemo, Playwright tutorial
-examples) — the POM work for this project lives in [`pages/`](pages/) and
-[`tests/automationexercise.spec.ts`](tests/automationexercise.spec.ts).
+The POM work for this project lives in [`pages/`](pages/) and
+[`tests/automationexercise.spec.ts`](tests/automationexercise.spec.ts). A second
+spec, [`tests/saucedemo.spec.ts`](tests/saucedemo.spec.ts), adds SauceDemo
+positive/negative login, cart, sort, and checkout coverage. Earlier tutorial
+scratch files are kept out of the test run under [`learning/`](learning/).
+
+## Prerequisites
+
+- **Node.js 18 or newer** (`node --version`)
+- npm (ships with Node)
 
 ## Tech stack
 
@@ -27,8 +34,10 @@ my-playwright-learning/
 │   └── CartPage.ts                # cart contents
 ├── test-data/
 │   └── products.ts                # search term, subscriber email (no data hardcoded in specs)
-├── tests/
-│   └── automationexercise.spec.ts # Track B suite (7 tests) — scenarios + assertions
+├── tests/                         # the runnable suite (testDir)
+│   ├── automationexercise.spec.ts # Track B suite (7 tests) — scenarios + assertions
+│   └── saucedemo.spec.ts          # SauceDemo login/cart/checkout (positive + negative)
+├── learning/                      # tutorial scratch specs — NOT run by the suite
 ├── playwright.config.ts
 └── README.md
 ```
@@ -42,7 +51,16 @@ npm install
 npx playwright install
 ```
 
-Run the final-project (Track B) suite:
+Run the whole suite (both spec files, all browsers):
+
+```bash
+npx playwright test
+```
+
+`testDir` is `tests/`, so the scratch specs under `learning/` are never
+collected — a plain `npx playwright test` runs only the real POM/SauceDemo tests.
+
+Run just the final-project (Track B) suite:
 
 ```bash
 # All browsers
@@ -106,3 +124,13 @@ Design rules followed:
   runs serially.
 - The HTML reporter is enabled; on CI the `playwright-report/` is uploaded as an
   artifact (see [`.github/workflows/playwright.yml`](.github/workflows/playwright.yml)).
+
+## Known limitations
+
+- The tests run against **live third-party demo sites**, so an occasional
+  failure can come from the site itself (ad overlays, slow responses, or a 5xx)
+  rather than the tests. The config allows one local retry to absorb this; just
+  re-run if a single test flakes. The suite passes reliably under
+  `npx playwright test --project=chromium --repeat-each=3`.
+- Coverage is intentionally scoped to the documented user journeys, not every
+  edge case.

@@ -6,9 +6,16 @@ End-to-end UI tests written with **Playwright + TypeScript**, structured with th
 covers a realistic shopping journey: browsing, search, product details, and the
 cart.
 
-The repository also keeps earlier learning specs (SauceDemo, Playwright tutorial
-examples) — the POM work for this project lives in [`pages/`](pages/) and
-[`tests/automationexercise.spec.ts`](tests/automationexercise.spec.ts).
+The POM work for this project lives in [`pages/`](pages/) and
+[`tests/automationexercise.spec.ts`](tests/automationexercise.spec.ts). A second
+spec, [`tests/saucedemo.spec.ts`](tests/saucedemo.spec.ts), adds SauceDemo
+positive/negative login, cart, sort, and checkout coverage. Earlier tutorial
+scratch files are kept out of the test run under [`learning/`](learning/).
+
+## Prerequisites
+
+- **Node.js 18 or newer** (`node --version`)
+- npm (ships with Node)
 
 ## Tech stack
 
@@ -27,8 +34,10 @@ my-playwright-learning/
 │   └── CartPage.ts                # cart contents
 ├── test-data/
 │   └── products.ts                # search term, subscriber email (no data hardcoded in specs)
-├── tests/
-│   └── automationexercise.spec.ts # Track B suite (7 tests) — scenarios + assertions
+├── tests/                         # the runnable suite (testDir)
+│   ├── automationexercise.spec.ts # Track B suite (7 tests) — scenarios + assertions
+│   └── saucedemo.spec.ts          # SauceDemo login/cart/checkout (positive + negative)
+├── learning/                      # tutorial scratch specs — NOT run by the suite
 ├── playwright.config.ts
 └── README.md
 ```
@@ -42,7 +51,16 @@ npm install
 npx playwright install
 ```
 
-Run the final-project (Track B) suite:
+Run the whole suite (both spec files, all browsers):
+
+```bash
+npx playwright test
+```
+
+`testDir` is `tests/`, so the scratch specs under `learning/` are never
+collected — a plain `npx playwright test` runs only the real POM/SauceDemo tests.
+
+Run just the final-project (Track B) suite:
 
 ```bash
 # All browsers
@@ -78,8 +96,11 @@ Design rules followed:
 - **Actions in Page Objects, assertions in tests.** Page Objects expose
   locators as `readonly` properties and wrap interactions in methods; every
   `expect()` lives in the spec, so each test shows the full picture.
-- **Stable locators.** Role/accessibility-based (`getByRole`, `getByText`,
-  `getByPlaceholder`) and stable ids — no XPath, no brittle CSS class chains.
+- **Stable locators, role/id first.** Locators prefer role/accessibility
+  (`getByRole`, `getByText`, `getByPlaceholder`) and ids (`#cart_info_table`,
+  `#submit_search`). The demo site exposes no `data-testid`s, so a few container
+  scopes fall back to CSS class selectors (e.g. `.features_items`); there is no
+  XPath and no deep/positional CSS chains.
 - **No hard waits.** No `waitForTimeout`. Synchronisation relies on Playwright's
   auto-waiting; the one explicit `waitFor` (add-to-cart modal) confirms an action
   completed, it is not a fixed delay.
@@ -88,15 +109,16 @@ Design rules followed:
 
 ## Test suite (Track B)
 
-`tests/automationexercise.spec.ts` — 7 tests:
+`tests/automationexercise.spec.ts` — 8 tests:
 
 1. Home page loads and shows featured products
 2. User can navigate to the products page from the navbar
 3. Searching for a product returns matching results
-4. Product detail page shows name, category, and availability
-5. User can add a product to the cart and see it listed
-6. User can add two distinct products to the cart (uses `test.step` for a readable report)
-7. Visitor can subscribe to the newsletter from the footer
+4. Searching for a nonsense term returns no products (negative path)
+5. Product detail page shows name, category, and availability
+6. User can add a product to the cart and see it listed
+7. User can add two distinct products to the cart (uses `test.step` for a readable report)
+8. Visitor can subscribe to the newsletter from the footer
 
 ## Configuration & CI
 
@@ -106,3 +128,13 @@ Design rules followed:
   runs serially.
 - The HTML reporter is enabled; on CI the `playwright-report/` is uploaded as an
   artifact (see [`.github/workflows/playwright.yml`](.github/workflows/playwright.yml)).
+
+## Known limitations
+
+- The tests run against **live third-party demo sites**, so an occasional
+  failure can come from the site itself (ad overlays, slow responses, or a 5xx)
+  rather than the tests. The config allows one local retry to absorb this; just
+  re-run if a single test flakes. The suite passes reliably under
+  `npx playwright test --project=chromium --repeat-each=3`.
+- Coverage is intentionally scoped to the documented user journeys, not every
+  edge case.

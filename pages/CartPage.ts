@@ -9,14 +9,12 @@ export class CartPage {
   readonly cartTable: Locator;
   readonly rows: Locator;
   readonly productNames: Locator;
-  readonly proceedToCheckout: Locator;
 
   constructor(page: Page) {
     this.page = page;
     this.cartTable = page.locator("#cart_info_table");
     this.rows = this.cartTable.locator("tbody tr");
     this.productNames = this.cartTable.locator(".cart_description h4 a");
-    this.proceedToCheckout = page.getByText("Proceed To Checkout");
   }
 
   async open() {
